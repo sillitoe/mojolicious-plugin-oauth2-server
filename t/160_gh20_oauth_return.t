@@ -18,9 +18,9 @@ my %auth_config = (
     },
   },
   users => {
-    test_user   => 'test_password',
+    test_user => 'test_password',
   },
-  jwt_secret    => 'jwtjwtjwtjwtjwtjwtjwtjwtjwtjwtjwtjwtjwt',
+  jwt_secret => 'jwtjwtjwtjwtjwtjwtjwtjwtjwtjwtjwtjwt',
 );
 
 sub startup {
@@ -34,27 +34,21 @@ sub startup {
      my $c = shift;
 
      my $log  = $c->app->log;
-     my $tx   = $c->tx;
-     my $ip   = $c->tx->remote_address;
      my $path = $c->req->url->path;
 
-     $log->debug( "REQUEST.URL:      " . $tx->req->url );
-     $log->debug( "REQUEST.PARAMS:   " . $tx->req->params->to_string );
-     $log->debug( "REQUEST.BODY:     " . $tx->req->body );
-     $log->debug( "REQUEST.HEADERS:  " . $tx->req->headers->to_string );
-     $log->debug( "REQUEST.IP:       " . $ip );
+     $log->info( "REQ.HEADERS:\n" . $c->req->headers->to_string );
 
      if ( my $oauth_details = $c->oauth ) {
 	     $log->info( "OAUTH: " . Dumper( $oauth_details ) );
-       $log->info( sprintf "Authenticated: %s ip=%s client=%s user=%s scope=%s",
-         $path, $ip, $oauth_details->{client}, $oauth_details->{user_id}, join( ",", @{$oauth_details->{scopes} || []} )
+       $log->info( sprintf "AUTHENTICATED: path=%s user=%s scope=%s",
+         $path, $oauth_details->{client}, $oauth_details->{user_id}, join( ",", @{$oauth_details->{scopes} || []} )
 			 );
        return 1;
      }
      else {
        # not authenticated
-       $log->info( sprintf "NOT Authenticated: %s ip=%s", $path, $ip );
-       $c->render( status => 401, json => { message => "Sorry, the API endpoint '$path' requires authorization" } );
+       $log->info( "NOT_AUTHENTICATED: path=$path" );
+       $c->render( status => 401, json => { message => "Sorry, the endpoint '$path' requires authorization" } );
      }
 
      return;
@@ -63,13 +57,10 @@ sub startup {
 
   $private->get('authenticated_as' => sub {
     my $c = shift;
-    if ( my $oauth_details = $c->oauth ) {
-      $c->render( json => { message => "Yay!", username => $oauth_details->{username} } );
-    }
-    else {
-      $c->render( json => { message => "Boo!" } );
-    }
-    return;
+    my $oauth_details = $c->oauth ||
+      return $c->render( status => 401, json => { message => "no auth" } );
+
+    $c->render( json => { message => "Yay!", user_id => $oauth_details->{user_id} } );
   });
 
   $self->plugin("OAuth2::Server" => \%auth_config );
@@ -96,7 +87,7 @@ my %token_params = (
 # not authorized
 $t->get_ok('/private/authenticated_as')
    ->status_is( 401 )
-   ->json_is( { message => 'Boo!' } );
+   ->json_is( { message => "Sorry, the endpoint '/private/authenticated_as' requires authorization" } );
 
 my %params = ( %token_params, username => 'test_user', password => 'test_password' );
 
