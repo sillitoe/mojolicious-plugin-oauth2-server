@@ -43,10 +43,13 @@ MOJO_APP: {
   # /sleep - must be authorized and have sleep scope
   get '/api/sleep' => sub {
     my ( $c ) = @_;
-    $c->oauth( 'sleep' )
-      || $c->render( status => 401, text => 'You cannot sleep' );
 
-    $c->render( text => "bed" );
+    if ( my $auth_details = $c->oauth( 'sleep' ) ) {
+      die "Time to die... (or is it?)";
+      $c->render( text => "Time for bed, " . ucfirst( $auth_details->{user_id} ) );
+    } else {
+      $c->render( status => 401, text => 'You cannot sleep' );
+    }
   };
 };
 
