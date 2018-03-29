@@ -11,7 +11,7 @@ use Data::Dumper;
 my %auth_config = (
   clients => {
     'contributor' => {
-      client_secret => 'client_secret',
+      client_secret => 'clientsecret',
       scopes => {
         'can_write' => 1,
       },
@@ -20,7 +20,7 @@ my %auth_config = (
   users => {
     test_user => 'test_password',
   },
-  jwt_secret => 'jwt_secret',
+  jwt_secret => 'jwtsecret',
 );
 
 sub startup {
@@ -79,7 +79,7 @@ my $t = Test::Mojo->new( 'OAuthCheckReturn' );
 
 my %token_params = (
   client_id => 'contributor',
-  client_secret => 'clientclientclientclientclientclient',
+  client_secret => 'clientsecret',
   grant_type => 'password',
   scope => ['can_write'],
 );
