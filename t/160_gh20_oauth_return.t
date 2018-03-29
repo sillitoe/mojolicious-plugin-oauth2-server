@@ -11,7 +11,7 @@ use Data::Dumper;
 my %auth_config = (
   clients => {
     'contributor' => {
-      client_secret => 'clientclientclientclientclientclient',
+      client_secret => 'client_secret',
       scopes => {
         'can_write' => 1,
       },
@@ -20,7 +20,7 @@ my %auth_config = (
   users => {
     test_user => 'test_password',
   },
-  jwt_secret => 'jwtjwtjwtjwtjwtjwtjwtjwtjwtjwtjwtjwt',
+  jwt_secret => 'jwt_secret',
 );
 
 sub startup {
